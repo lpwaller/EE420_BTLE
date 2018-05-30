@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Top Block
-# Generated: Wed May 23 13:35:00 2018
+# Generated: Wed May 30 12:37:48 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -25,11 +25,11 @@ from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
-import string_to_list
 import sys
 import time
 import numpy as np
-from scipy.cluster.vq import whiten
+import string_to_list
+
 
 
 class top_block(gr.top_block, Qt.QWidget):
@@ -60,28 +60,27 @@ class top_block(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 1e6
-        self.c_freq = c_freq = 2.402e9
+        self.samp_rate = samp_rate = 5e6
+        self.c_freq = c_freq = 2.426e9
 
         ##################################################
         # Blocks
         ##################################################
-        self.uhd_usrp_sink_0 = uhd.usrp_sink(
+        self.uhd_usrp_sink_1 = uhd.usrp_sink(
         	",".join(("", "")),
         	uhd.stream_args(
         		cpu_format="fc32",
         		channels=range(1),
         	),
         )
-
-        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_sink_0.set_center_freq(c_freq, 0)
-        self.uhd_usrp_sink_0.set_gain(15, 0)
-        self.uhd_usrp_sink_0.set_bandwidth(1e6, 0)
+        self.uhd_usrp_sink_1.set_samp_rate(samp_rate)
+        self.uhd_usrp_sink_1.set_center_freq(c_freq, 0)
+        self.uhd_usrp_sink_1.set_gain(25, 0)
+        self.uhd_usrp_sink_1.set_bandwidth(36e6, 0)
         self.digital_gfsk_mod_0 = digital.gfsk_mod(
-        	samples_per_symbol=2,
+        	samples_per_symbol=5,
         	sensitivity=1.0,
-        	bt=0.35,
+        	bt=0.5,
         	verbose=False,
         	log=False,
         )
@@ -90,13 +89,15 @@ class top_block(gr.top_block, Qt.QWidget):
         advertisement = list(bin(int(advertisement, base=16)).lstrip('0b'))
         #advertisement = np.asarray(advertisement, dtype=np.uint8)
         advertisement = string_to_list.conv_string_to_1_0_list(advertisement)
-        self.blocks_vector_source_x_0 = blocks.vector_source_b((advertisement), True, 1, [])
+        advertisement = [0] + advertisement
+        self.blocks_vector_source_x_0 = blocks.vector_source_b(([1,1,1,1,1,1]), True, 1, [])
 
         ##################################################
         # Connections
         ##################################################
         self.connect((self.blocks_vector_source_x_0, 0), (self.digital_gfsk_mod_0, 0))
-        self.connect((self.digital_gfsk_mod_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.digital_gfsk_mod_0, 0), (self.uhd_usrp_sink_1, 0))
+
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "top_block")
@@ -109,14 +110,14 @@ class top_block(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_sink_1.set_samp_rate(self.samp_rate)
 
     def get_c_freq(self):
         return self.c_freq
 
     def set_c_freq(self, c_freq):
         self.c_freq = c_freq
-        self.uhd_usrp_sink_0.set_center_freq(self.c_freq, 0)
+        self.uhd_usrp_sink_1.set_center_freq(self.c_freq, 0)
 
 
 def main(top_block_cls=top_block, options=None):
