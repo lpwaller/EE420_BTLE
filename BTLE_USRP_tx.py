@@ -32,6 +32,7 @@ import numpy as np
 from scipy.cluster.vq import whiten
 
 
+
 class top_block(gr.top_block, Qt.QWidget):
 
     def __init__(self):
